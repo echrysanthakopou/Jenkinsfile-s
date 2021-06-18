@@ -1,8 +1,8 @@
 FROM tomcat:8.0-alpine
 
-LABEL maintainer=”deepak@softwareyoga.com”
 
-ADD my-app.war /usr/local/tomcat/webapps/
+
+ADD target/pensionFrontEnd.war /usr/local/tomcat/webapps/
 
 
 
