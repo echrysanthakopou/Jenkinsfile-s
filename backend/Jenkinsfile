@@ -1,0 +1,64 @@
+pipeline {
+    
+        agent any
+        environment {
+            VERSION_TAG = getVersion()
+        }
+		stages {
+			stage ('Dev Homework - Checkout') {
+			    steps{
+				checkout([$class: 'GitSCM', branches: [[name: '*/main']], 
+					doGenerateSubmoduleConfigurations: false, extensions: [], 
+					submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'e69ff7f5-1d77-48c6-9f2c-b2123caac355', 
+					url: 'https://github.com/echrysanthakopou/backend.git']]]) 
+			}
+			}
+			stage ('Dev Homework - clean') {
+			steps{
+				sh " mvn clean"
+			}
+			}
+
+			stage('Dev Homework - build')
+			{steps{
+
+				sh "mvn clean install"
+			}}
+
+			stage('Dev Homework - docker')
+			{steps{
+
+				sh "docker build . -t echrysanthakopou/back:1_0_0"
+			}}
+
+			stage('Dev Homework - docker push')
+			{steps{
+
+                sh "docker login -u echrysanthakopou -p Evelin1234!@#\$"
+				sh "docker push  echrysanthakopou/back:1_0_0"
+			}}
+
+
+			stage('deploy')
+			{steps{
+			
+			ansiblePlaybook installation: 'ansible', playbook: 'deploy.yml'
+			
+			    
+			}}
+
+
+			stage('Store Artifacts')
+			{steps{
+				archiveArtifacts allowEmptyArchive: false, artifacts: 'target/*.jar',
+					caseSensitive: true, defaultExcludes: true, fingerprint: false,
+					onlyIfSuccessful: false 
+			}}
+		}
+}
+
+
+def getVersion(){
+    def  version=sh returnStdout: true, script: 'git rev-parse --short HEAD'
+    return version
+}
