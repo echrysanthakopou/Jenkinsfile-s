@@ -1,0 +1,70 @@
+pipeline {
+    
+        agent any
+        environment {
+            VERSION_TAG = getVersion()
+        }
+		stages {
+			stage ('Dev Homework - Checkout') {
+			    steps{
+				 checkout([$class: 'GitSCM', branches: [[name: '*/main']], 
+				doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], 
+				userRemoteConfigs: [[credentialsId: 'e69ff7f5-1d77-48c6-9f2c-b2123caac355',
+				url: 'https://github.com/echrysanthakopou/frontEnd']]]) 
+			}
+			}
+			stage ('Dev Homework - 1') {
+			steps{
+				sh "cd frontEnd; npm install"
+			}
+			}
+
+			stage('Dev Homework - 2')
+			{steps{
+
+				
+				sh """ cd frontEnd;npm run build """
+			}}
+			stage('Dev Homework - 3')
+			{steps{
+
+				
+				sh " cd frontEnd; mvn package"
+			}}
+
+			stage('Dev Homework - 4')
+			{steps{
+
+				sh "cd frontEnd; docker build . -t echrysanthakopou/front:1_0_0"
+			}}
+
+			stage('Dev Homework - docker push')
+			{steps{
+
+                sh "docker login -u echrysanthakopou -p Evelin1234!@#\$"
+				sh "cd frontEnd;docker push  echrysanthakopou/front:1_0_0"
+			}}
+
+
+			stage('deploy')
+			{steps{
+			
+			ansiblePlaybook installation: 'ansible', playbook: 'deploy.yml'
+			
+			    
+			}}
+
+			stage('Store Artifacts')
+			{steps{
+				archiveArtifacts allowEmptyArchive: false, artifacts: 
+				'frontEnd/target/*.war', caseSensitive: true, defaultExcludes: true,
+   				fingerprint: false, onlyIfSuccessful: false 
+			}}
+		}
+}
+
+
+def getVersion(){
+    def  version=sh returnStdout: true, script: 'git rev-parse --short HEAD'
+    return version
+}
