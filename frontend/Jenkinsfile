@@ -5,7 +5,7 @@ pipeline {
             VERSION_TAG = getVersion()
         }
 		stages {
-			stage ('Dev Homework - Checkout') {
+			stage ('Stage 1  - Checkout') {
 			    steps{
 				 checkout([$class: 'GitSCM', branches: [[name: '*/main']], 
 				doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], 
@@ -13,32 +13,32 @@ pipeline {
 				url: 'https://github.com/echrysanthakopou/frontEnd']]]) 
 			}
 			}
-			stage ('Dev Homework - 1') {
+			stage ('Stage 2 - Download dependance') {
 			steps{
 				sh "cd frontEnd; npm install"
 			}
 			}
 
-			stage('Dev Homework - 2')
+			stage('Stage 3 -build')
 			{steps{
 
 				
 				sh """ cd frontEnd;npm run build """
 			}}
-			stage('Dev Homework - 3')
+			stage('stage 4 - package create war')
 			{steps{
 
 				
 				sh " cd frontEnd; mvn package"
 			}}
 
-			stage('Dev Homework - 4')
+			stage('stage 5 - create docker')
 			{steps{
 
 				sh "cd frontEnd; docker build . -t echrysanthakopou/front:1_0_0"
 			}}
 
-			stage('Dev Homework - docker push')
+			stage('stage 6 - docker push to docker hub')
 			{steps{
 
                 sh "docker login -u echrysanthakopou -p Evelin1234!@#\$"
@@ -46,7 +46,7 @@ pipeline {
 			}}
 
 
-			stage('deploy')
+			stage('Stage 7 deploy to the server')
 			{steps{
 			
 			ansiblePlaybook installation: 'ansible', playbook: 'deploy.yml'
