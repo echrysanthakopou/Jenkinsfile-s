@@ -5,7 +5,7 @@ pipeline {
             VERSION_TAG = getVersion()
         }
 		stages {
-			stage ('Dev Homework - Checkout') {
+			stage ('Stage 1 - Checkout Code') {
 			    steps{
 				checkout([$class: 'GitSCM', branches: [[name: '*/main']], 
 					doGenerateSubmoduleConfigurations: false, extensions: [], 
@@ -13,25 +13,25 @@ pipeline {
 					url: 'https://github.com/echrysanthakopou/backend.git']]]) 
 			}
 			}
-			stage ('Dev Homework - clean') {
+			stage ('Stage 2 - clean environment') {
 			steps{
 				sh " mvn clean"
 			}
 			}
 
-			stage('Dev Homework - build')
+			stage('Stage 3 - build')
 			{steps{
 
 				sh "mvn clean install"
 			}}
 
-			stage('Dev Homework - docker')
+			stage('Stage 4 - build backecnd docker')
 			{steps{
 
 				sh "docker build . -t echrysanthakopou/back:1_0_0"
 			}}
 
-			stage('Dev Homework - docker push')
+			stage('Stage 5 - docker push in docker hub')
 			{steps{
 
                 sh "docker login -u echrysanthakopou -p Evelin1234!@#\$"
@@ -39,16 +39,17 @@ pipeline {
 			}}
 
 
-			stage('deploy')
+			stage('Stage 6 deploy on the server')
 			{steps{
+			    
+		
 			
 			ansiblePlaybook installation: 'ansible', playbook: 'deploy.yml'
-			
 			    
 			}}
 
 
-			stage('Store Artifacts')
+			stage('Stage 7 Store Artifacts')
 			{steps{
 				archiveArtifacts allowEmptyArchive: false, artifacts: 'target/*.jar',
 					caseSensitive: true, defaultExcludes: true, fingerprint: false,
